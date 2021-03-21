@@ -4,6 +4,7 @@ import admin from 'firebase-admin'
 import semver from 'semver'
 import glob from 'glob'
 import chalk from 'chalk'
+import ms from 'ms'
 
 const App = admin.initializeApp()
 const DB = admin.firestore()
@@ -92,20 +93,31 @@ async function runMigrations(migrations: MigrationFile[], options: Options) {
       continue
     }
 
-    const result: MigrationResult = {
-      version: migration.version,
-      executed: Timestamp.now(),
-      status: MigrationResultStatus.Successful,
-    }
+    const start = process.hrtime.bigint()
+    let error = false
     try {
       await migration.fn(DB, admin.firestore)
-      await remoteDoc.ref.set(result)
-      printMigration(migration, chalk.green(`✅ Success`))
     } catch (e) {
-      await remoteDoc.ref.set({ ...result, status: MigrationResultStatus.Failed })
-      printMigration(migration, chalk.red(`❌ Error while running.`))
+      error = true
       console.error(e)
       break
+    } finally {
+      const delta = (process.hrtime.bigint() - start) / BigInt(1000000)
+      const time = ms(Number(delta))
+      const message = error ? chalk.red(`❌ Error while running.`) : chalk.green(`✅ Success`)
+      printMigration(migration, `${message}   ${chalk.gray(time)}`)
+
+      const result: MigrationResult = {
+        version: migration.version,
+        executed: Timestamp.now(),
+        status: error ? MigrationResultStatus.Failed : MigrationResultStatus.Successful,
+      }
+      await remoteDoc.ref.set(result)
+
+      if (error) {
+        console.log('⚠️ Skipping next migrations')
+        break
+      }
     }
   }
 }
