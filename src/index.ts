@@ -9,7 +9,7 @@ import ms from 'ms'
 const App = admin.initializeApp()
 const DB = admin.firestore()
 const Timestamp = admin.firestore.Timestamp
-const MigrationCollection = DB.collection('migrations')
+const MigrationCollection = DB.collection('_migrations')
 
 export type MigrationFN = (db: FirebaseFirestore.Firestore, firestore: typeof admin.firestore) => Promise<void>
 export type MigrationFile = {
