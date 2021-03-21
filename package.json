@@ -1,0 +1,34 @@
+{
+  "name": "firemorph",
+  "description": "Firestore migration tool",
+  "keywords": [
+    "firestore",
+    "firebase",
+    "migration",
+    "db"
+  ],
+  "files": [
+    "./dist"
+  ],
+  "version": "1.0.0",
+  "main": "./dist/src",
+  "types": "./dist/src/index.d.ts",
+  "bin": "./dist/src/cli.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "rm -rf ./dist && tsc"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/semver": "^7.3.4",
+    "typescript": "^4"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "commander": "^7.1.0",
+    "firebase-admin": "^9.5.0",
+    "glob": "^7.1.6",
+    "semver": "^7.3.4"
+  }
+}
