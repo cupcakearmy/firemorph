@@ -6,6 +6,7 @@
 ![version badge](https://badgen.net/npm/v/firemorph)
 ![minzip size badge](https://badgen.net/bundlephobia/minzip/firemorph)
 
+> ⚠️ Prerelease software. Use at own risk
 
 Migration tool for Firestore
 
@@ -16,7 +17,7 @@ Migration tool for Firestore
 ## Local testing
 
 - FIRESTORE_EMULATOR_HOST="localhost:8080"
-- GCLOUD_PROJECT="lovoo-dna-2"
+- GCLOUD_PROJECT="my-firebase-project-id"
 
 ## Migrations
 
