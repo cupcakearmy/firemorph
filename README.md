@@ -1,5 +1,12 @@
 # firemorph
 
+![dependencies](https://badgen.net/david/dep/cupcakearmy/firemorph)
+![downloads badge](https://badgen.net/npm/dt/firemorph)
+![types badge](https://badgen.net/npm/types/firemorph)
+![version badge](https://badgen.net/npm/v/firemorph)
+![minzip size badge](https://badgen.net/bundlephobia/minzip/firemorph)
+
+
 Migration tool for Firestore
 
 ## Gotchas
