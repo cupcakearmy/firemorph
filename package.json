@@ -1,7 +1,7 @@
 {
   "name": "firemorph",
   "description": "Firestore migration tool",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "keywords": [
     "firestore",
     "firebase",
@@ -17,7 +17,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsc -w",
-    "build": "rm -rf ./dist && tsc"
+    "build": "rm -rf ./dist && tsc",
+    "prepublishOnly": "yarn run build"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
