@@ -32,15 +32,22 @@ export type Options = {
   directory: string
   delimiter: string
   ignoreRemote: boolean
+  single?: string[]
+  dryRun: boolean
 }
 
 const defaults: Options = {
   directory: './migrations',
   delimiter: '__',
   ignoreRemote: false,
+  dryRun: false,
 }
 
 const extension = /\..*$/
+
+function sortMigrationFiles(arr: MigrationFile[]): MigrationFile[] {
+  return arr.sort((a, b) => (semver.gt(a.version, b.version) ? 1 : -1))
+}
 
 async function gather(options: Options): Promise<MigrationFile[]> {
   const files = glob
@@ -68,11 +75,11 @@ async function gather(options: Options): Promise<MigrationFile[]> {
     })
   )
 
-  const sorted = contents.sort((a, b) => (semver.gt(a.version, b.version) ? 1 : -1))
-  return sorted.map(({ version, ...rest }) => ({
+  const asMigrationFile = contents.map(({ version, ...rest }) => ({
     ...rest,
     version: version.version,
   }))
+  return sortMigrationFiles(asMigrationFile)
 }
 
 function getIdFromMigration(migration: MigrationFile): string {
@@ -91,6 +98,11 @@ async function runMigrations(migrations: MigrationFile[], options: Options) {
     if (!options.ignoreRemote && remote && remote.status === MigrationResultStatus.Successful) {
       printMigration(migration, '🔧 Already run.')
       continue
+    }
+
+    if (options.dryRun) {
+      printMigration(migration, 'Skip due to dry-run.')
+      return
     }
 
     const start = process.hrtime.bigint()
@@ -115,15 +127,34 @@ async function runMigrations(migrations: MigrationFile[], options: Options) {
       await remoteDoc.ref.set(result)
 
       if (error) {
-        console.log('⚠️ Skipping next migrations')
-        break
+        throw new Error('⚠️ Skipping next migrations')
       }
     }
   }
 }
 
 export async function migrate(options?: Partial<Options>) {
-  const merged: Options = Object.assign(defaults, options)
-  const migrations = await gather(merged)
-  await runMigrations(migrations, merged)
+  try {
+    const merged: Options = Object.assign(defaults, options)
+    let migrations = await gather(merged)
+    console.log(`Found ${chalk.bold(migrations.length)} migrations.`)
+    if (options?.single) {
+      const singleVersions = options.single.map((v) => {
+        const parsed = semver.coerce(v)
+        if (!parsed) throw new Error(`Invalid version specified: "${v}". Could not parse.`)
+        return parsed.version
+      })
+      const filtered = singleVersions.map((v) => {
+        const selected = migrations.find((m) => m.version === v)
+        if (!selected) throw new Error(`Version "${v}" specified in --only does not exist in as migration.`)
+        return selected
+      })
+      migrations = sortMigrationFiles(filtered)
+      console.log(`Only running specified versions: ${singleVersions.join(', ')}`)
+    }
+    await runMigrations(migrations, merged)
+  } catch (e) {
+    console.error(chalk.red(e.message))
+    process.exit(1)
+  }
 }

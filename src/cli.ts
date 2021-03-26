@@ -10,11 +10,12 @@ program.version(spec.version).name(spec.name)
 program
   .command('migrate')
   .description('run migrations')
-  // .option('--dry-run', 'run simulation without committing changes')
+  .option('--dry-run', 'run simulation without committing changes')
   .option('-m, --migrations <glob>', 'migration files', './migrations/*.js')
-  .option('--force', 'ignore remote state and rerun migrations')
+  .option('--only <version...>', 'only run specific migration')
+  .option('-f, --force', 'ignore remote state and rerun migrations')
   .action(async (args) => {
-    await migrate({ directory: args.migrations, ignoreRemote: args.force })
+    await migrate({ directory: args.migrations, ignoreRemote: args.force, single: args.only, dryRun: args.dryRun })
   })
 
 program.parse(process.argv)
